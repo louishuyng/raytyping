@@ -28,6 +28,7 @@ export function useGame() {
     setTest(test);
     setContent(test);
 
+    setInProgress(false);
     setIsFinish(false);
   }
 
