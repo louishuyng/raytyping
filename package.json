@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "raytyping",
   "title": "Raytyping",
-  "description": "This extension inspired by monkeytype. For developer who loves typing keyboard and mesure their speed of typing skill",
+  "description": "This extension inspired by monkeytype. For developer who loves typing keyboard and measure their speed of typing skill",
   "icon": "command-icon.png",
   "author": "louishuyng",
   "license": "MIT",
