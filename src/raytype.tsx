@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import * as api from "@raycast/api";
 
 export default function Main() {
-  const test = "Hello World";
+  const test = "testing word for many cases";
+
+  const [startTime, setStartTime] = useState<Date | null>(null);
 
   // Speed has been counted by word per minutes (wpm)
   const [speed, setSpeed] = useState<number>(0);
@@ -64,7 +66,31 @@ export default function Main() {
     return `Your are finished typing with speed **${speed}**`;
   }
 
+  function countWordsPerMinute(startTime: Date, typedText: string) {
+    const elapsedTime = (new Date().getTime() - startTime.getTime()) / 1000 / 60;
+    const enteredText = typedText.trim();
+
+    const wordCount = enteredText.split(/\s+/).length;
+
+    const wpm = Math.round(wordCount / elapsedTime);
+
+    return wpm;
+  }
+
   useEffect(() => {
+    let beginning: Date | null = null;
+
+    if (typedText.length === 0) {
+      return;
+    }
+
+    if (!startTime) {
+      beginning = new Date();
+      setStartTime(beginning);
+    } else {
+      beginning = startTime;
+    }
+
     const [matchingWords, matchedCount] = generateMatchingWords(typedText, test);
 
     if (matchedCount === test.length) {
@@ -75,6 +101,8 @@ export default function Main() {
     setIsCorrect(matchedCount === typedText.length);
 
     setContent(matchingWords);
+
+    setSpeed(countWordsPerMinute(beginning, typedText));
   }, [typedText]);
 
   return (
@@ -84,7 +112,7 @@ export default function Main() {
           source: isCorrect ? api.Icon.Check : api.Icon.Xmark,
           tintColor: isCorrect ? api.Color.Green : api.Color.Red,
         }}
-        title={"Speed"}
+        title={`${speed} wpm`}
         detail={<api.List.Item.Detail markdown={content} />}
       />
     </api.List>
