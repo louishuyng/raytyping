@@ -3,7 +3,6 @@ import { calculateWPM, generateMatchingWords, generateNewTest, generateSuccessMe
 
 export function useGame() {
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const [lastTest, setLastTest] = useState<number[]>([]);
   const [test, setTest] = useState("");
 
   // Speed has been counted by word per minutes (wpm)
@@ -24,14 +23,7 @@ export function useGame() {
     setFailedCount(0);
 
     // Generate new test
-    const [test, newIndex] = generateNewTest(lastTest);
-
-    // Only keep 5 last test
-    if (lastTest.length === 6) {
-      lastTest.shift();
-    }
-    lastTest.push(newIndex);
-    setLastTest(lastTest);
+    const test = generateNewTest();
 
     setTest(test);
     setContent(test);
