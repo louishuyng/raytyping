@@ -9,8 +9,8 @@
   "commands": [
     {
       "name": "raytype",
-      "title": "Raytyping start",
-      "description": "",
+      "title": "Raytyping",
+      "description": "Start Raytyping",
       "mode": "view"
     }
   ],
