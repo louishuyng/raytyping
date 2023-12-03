@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import * as api from "@raycast/api";
+import { List, Icon, Color, ActionPanel, Action } from "@raycast/api";
+import { faker } from "@faker-js/faker";
 
 export default function Main() {
-  const test = "testing word for many cases";
-
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [test, setTest] = useState("");
 
   // Speed has been counted by word per minutes (wpm)
   const [speed, setSpeed] = useState<number>(0);
@@ -14,6 +14,20 @@ export default function Main() {
   const [typedText, setTypedText] = useState<string>("");
 
   const [content, setContent] = useState<string>(test);
+
+  const [isFinish, setIsFinish] = useState<boolean>(false);
+
+  function reloadGame() {
+    setTypedText("");
+    setSpeed(0);
+
+    const test = faker.word.words(3);
+    setTest(test);
+    setContent(test);
+    setStartTime(null);
+
+    setIsFinish(false);
+  }
 
   // Compare typedText with content if have similar word in order from left to right
   // then bold that text
@@ -63,26 +77,34 @@ export default function Main() {
   }
 
   function generateSuccessMessage() {
-    return `Your are finished typing with speed **${speed}**`;
+    return `You are super, to reload press **Enter**`;
   }
 
-  function countWordsPerMinute(startTime: Date, typedText: string) {
-    const elapsedTime = (new Date().getTime() - startTime.getTime()) / 1000 / 60;
-    const enteredText = typedText.trim();
+  function calculateWPM(startTime: Date, text: string) {
+    // Calculate the time taken in seconds
+    const endTime = new Date();
+    const timeInSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
 
-    const wordCount = enteredText.split(/\s+/).length;
+    // Count the number of words in the typed text
+    const wordCount = text.trim().split(/\s+/).length;
 
-    const wpm = Math.round(wordCount / elapsedTime);
+    // Calculate the WPM
+    const wpm = Math.round(wordCount / (timeInSeconds / 60));
 
     return wpm;
   }
 
   useEffect(() => {
-    let beginning: Date | null = null;
+    reloadGame();
+  }, []);
 
-    if (typedText.length === 0) {
+  useEffect(() => {
+    // If game is finished the we dont want to process anything
+    if (isFinish || typedText.length === 0) {
       return;
     }
+
+    let beginning: Date | null = null;
 
     if (!startTime) {
       beginning = new Date();
@@ -94,27 +116,48 @@ export default function Main() {
     const [matchingWords, matchedCount] = generateMatchingWords(typedText, test);
 
     if (matchedCount === test.length) {
+      setIsFinish(true);
       setContent(generateSuccessMessage());
       return;
     }
 
     setIsCorrect(matchedCount === typedText.length);
-
     setContent(matchingWords);
 
-    setSpeed(countWordsPerMinute(beginning, typedText));
+    setSpeed(calculateWPM(beginning, typedText));
   }, [typedText]);
 
   return (
-    <api.List isShowingDetail={true} searchBarPlaceholder="Type here" onSearchTextChange={setTypedText}>
-      <api.List.Item
+    <List
+      searchText={isFinish ? "Reload to continue" : typedText}
+      isShowingDetail={true}
+      searchBarPlaceholder="Type here"
+      onSearchTextChange={(value) => (isFinish ? () => null : setTypedText(value))}
+    >
+      <List.Item
         icon={{
-          source: isCorrect ? api.Icon.Check : api.Icon.Xmark,
-          tintColor: isCorrect ? api.Color.Green : api.Color.Red,
+          source: Icon.Stopwatch,
+          tintColor: isCorrect ? Color.Green : Color.Red,
         }}
         title={`${speed} wpm`}
-        detail={<api.List.Item.Detail markdown={content} />}
+        actions={
+          <ActionPanel>
+            <Action title="Reload new game" onAction={() => reloadGame()} shortcut={{ modifiers: ["cmd"], key: "n" }} />
+          </ActionPanel>
+        }
+        detail={
+          <List.Item.Detail
+            markdown={content}
+            metadata={
+              isFinish ? (
+                <List.Item.Detail.Metadata>
+                  <List.Item.Detail.Metadata.Label title="Speed" text={{ color: Color.Green, value: `${speed} wpm` }} />
+                </List.Item.Detail.Metadata>
+              ) : null
+            }
+          />
+        }
       />
-    </api.List>
+    </List>
   );
 }
