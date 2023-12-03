@@ -15,6 +15,7 @@ export function useGame() {
   const [content, setContent] = useState<string>(test);
 
   const [isFinish, setIsFinish] = useState<boolean>(false);
+  const [inProgress, setInProgress] = useState<boolean>(false);
 
   function reloadGame() {
     setTypedText("");
@@ -34,6 +35,7 @@ export function useGame() {
 
     setTest(test);
     setContent(test);
+
     setIsFinish(false);
   }
 
@@ -45,6 +47,10 @@ export function useGame() {
     // If game is finished the we dont want to process anything
     if (isFinish || typedText.length === 0) {
       return;
+    }
+
+    if (!inProgress) {
+      setInProgress(true);
     }
 
     let beginning: Date | null = null;
@@ -62,6 +68,7 @@ export function useGame() {
 
     if (matchedCount === test.length) {
       setIsFinish(true);
+      setInProgress(false);
       setContent(generateSuccessMessage());
       return;
     }
@@ -81,6 +88,7 @@ export function useGame() {
     reloadGame: reloadGame,
     typedText: typedText,
     setTypedText: setTypedText,
+    inProgress: inProgress,
     test: test,
   };
 }
